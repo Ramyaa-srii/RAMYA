@@ -1,0 +1,365 @@
+`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Campus Assistant — UI Prototype</title>
+  <style>
+    :root{
+      --bg:#0f1724; /* rich navy */
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#4f46e5; /* indigo */
+      --accent-2:#06b6d4; /* cyan */
+      --glass: rgba(255,255,255,0.04);
+      --radius:14px;
+      --glass-2: rgba(255,255,255,0.02);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,var(--bg),#061025 60%);
+      color:#e6eef8; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      padding:20px;
+    }
+    .app{
+      max-width:1200px;margin:0 auto;display:grid;grid-template-columns:280px 1fr 320px;gap:20px;align-items:start;
+    }
+
+    /* Sidebar */
+    .sidebar{background:linear-gradient(180deg,var(--card), rgba(10,14,22,0.6));border-radius:var(--radius);padding:18px;border:1px solid rgba(255,255,255,0.03);height:calc(100vh - 70px);overflow:auto}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-weight:700}
+    .brand h1{font-size:14px;margin:0}
+    .brand p{margin:0;font-size:12px;color:var(--muted)}
+    .nav{margin-top:12px}
+    .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border-radius:10px;border:0;background:transparent;color:inherit;font-size:14px;cursor:pointer}
+    .nav button:hover{background:var(--glass)}
+    .nav button.active{background:linear-gradient(90deg, rgba(79,70,229,0.14), rgba(6,182,212,0.06));box-shadow:0 6px 20px rgba(6,182,212,0.03);}
+
+    .quick-search{margin-top:18px;padding:10px;border-radius:10px;background:var(--glass-2);border:1px solid rgba(255,255,255,0.02)}
+    .quick-search input{width:100%;padding:10px;border-radius:8px;border:0;background:transparent;color:inherit}
+
+    /* Main chat area */
+    .main{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:16px;min-height:600px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column}
+    .main .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .main h2{margin:0;font-size:16px}
+    .context-chips{display:flex;gap:8px;align-items:center}
+    .chip{background:var(--glass);padding:8px 10px;border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer}
+
+    .chat-area{flex:1;display:flex;flex-direction:column;gap:12px;overflow:auto;padding-right:6px}
+    .msg{max-width:78%;padding:12px;border-radius:12px;line-height:1.4}
+    .bot{background:linear-gradient(180deg,#0c1530, #071226);border:1px solid rgba(255,255,255,0.02);align-self:flex-start}
+    .user{background:linear-gradient(180deg, rgba(79,70,229,0.14), rgba(6,182,212,0.06));border:1px solid rgba(79,70,229,0.12);align-self:flex-end;color:#eaf2ff}
+    .timestamp{font-size:11px;color:var(--muted);margin-top:6px}
+
+    .composer{display:flex;gap:10px;align-items:center;padding-top:12px}
+    .composer input{flex:1;padding:12px;border-radius:12px;border:0;background:rgba(255,255,255,0.03);color:inherit}
+    .btn{padding:10px 14px;background:var(--accent);border-radius:10px;border:0;color:white;cursor:pointer}
+    .suggestions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .sug{background:var(--glass);padding:8px 10px;border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer}
+
+    /* Right column summary */
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:16px;border:1px solid rgba(255,255,255,0.03);height:calc(100vh - 70px);overflow:auto}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    .card h3{margin:0 0 8px 0}
+    .schedule-item{display:flex;justify-content:space-between;padding:8px;border-radius:10px}
+
+    /* responsive */
+    @media (max-width:1100px){.app{grid-template-columns:1fr;}}
+    @media (max-width:600px){body{padding:12px}.sidebar{display:none}.panel{display:none}.main{min-height:calc(100vh - 40px)}}
+
+    /* small animations */
+    .fade-in{animation:fade 420ms ease}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* accessibility focus */
+    button:focus,input:focus{outline:2px solid rgba(79,70,229,0.24);outline-offset:2px}
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Smart Campus Assistant">
+
+    <aside class="sidebar" aria-label="Navigation and quick tools">
+      <div class="brand">
+        <div class="logo">SC</div>
+        <div>
+          <h1>Smart Campus</h1>
+          <p>Assistant • Demo UI</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-section="chat" aria-pressed="true">💬 Chat</button>
+        <button data-section="schedules">📅 Schedules</button>
+        <button data-section="facilities">🏫 Facilities</button>
+        <button data-section="dining">🍽 Dining</button>
+        <button data-section="library">📚 Library</button>
+        <button data-section="admin">🧾 Administrative</button>
+      </nav>
+
+      <div class="quick-search" role="search" aria-label="Quick campus search">
+        <input id="quickSearch" placeholder="Search: e.g. 'library hours'" />
+      </div>
+
+      <div style="margin-top:12px">
+        <strong style="font-size:13px">Quick actions</strong>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <button onclick="openScheduleModal()">View Today's Timetable</button>
+          <button onclick="openDining()">Today's Menu</button>
+          <button onclick="openLibrary()">Find a Book</button>
+        </div>
+      </div>
+
+    </aside>
+
+    <main class="main" id="main" tabindex="0">
+      <div class="top">
+        <div>
+          <h2>Hi — I'm your Smart Campus Assistant</h2>
+          <div style="color:var(--muted);font-size:13px">Ask me about schedules, facilities, dining, library services, or admin procedures.</div>
+        </div>
+        <div class="context-chips">
+          <div class="chip" data-context="student">Student</div>
+          <div class="chip" data-context="faculty">Faculty</div>
+          <div class="chip" data-context="visitor">Visitor</div>
+        </div>
+      </div>
+
+      <section class="chat-area" id="chatArea" aria-live="polite">
+        <!-- initial bot message -->
+        <div class="msg bot fade-in">
+          <strong>Smart Campus</strong>
+          <div style="margin-top:8px;color:var(--muted)">Hello! Try: "What's my class schedule today?" or "Where is the Science building?"</div>
+          <div class="timestamp">Now</div>
+        </div>
+      </section>
+
+      <div class="composer">
+        <input id="userInput" placeholder="Type a question or select a suggestion..." aria-label="Message input" />
+        <button class="btn" id="sendBtn">Send</button>
+      </div>
+
+      <div class="suggestions" aria-hidden="false" id="suggestions">
+        <div class="sug">Today's classes</div>
+        <div class="sug">Library opening hours</div>
+        <div class="sug">How to apply for transcript</div>
+        <div class="sug">Cafeteria menu</div>
+      </div>
+
+    </main>
+
+    <aside class="panel" aria-label="Summary and quick glance">
+      <div class="card">
+        <h3>Today's snapshot</h3>
+        <div class="schedule-item"><div>Next class</div><div style="text-align:right"><strong id="nextClass">Data Structures • 11:00</strong><div style="font-size:12px;color:var(--muted)">Room 205</div></div></div>
+      </div>
+
+      <div class="card">
+        <h3>Dining highlights</h3>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Cafeteria A: North lawn</div>
+        <ul style="margin:0;padding-left:18px;color:var(--muted)">
+          <li>Paneer Tikka (veg)</li>
+          <li>Grilled Chicken</li>
+          <li>Vegan Salad Bar</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Library quick links</h3>
+        <div style="display:flex;gap:8px;flex-direction:column">
+          <button onclick="openLibrary()">Search catalogue</button>
+          <button onclick="renewBooks()">Renew loans</button>
+          <button onclick="openLibraryHelp()">Ask librarian</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Admin notices</h3>
+        <p style="color:var(--muted);font-size:13px;margin:6px 0">Transcript requests close: <strong>Sep 20, 2025</strong></p>
+        <button onclick="openAdmin('transcript')">How to request</button>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- Modals (simple JS-driven) -->
+  <div id="modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:60">
+    <div style="width:94%;max-width:760px;background:var(--card);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)">
+      <div id="modalContent"></div>
+      <div style="text-align:right;margin-top:12px"><button onclick="closeModal()" style="padding:8px 12px;border-radius:8px">Close</button></div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Sample campus data (in-memory) ----------
+    const DATA = {
+      schedule: [
+        {time:'09:00',title:'Algorithms',loc:'Room 101'},
+        {time:'11:00',title:'Data Structures',loc:'Room 205'},
+        {time:'14:00',title:'Lab - Networks',loc:'Lab 3'}
+      ],
+      facilities: [
+        {name:'Science Building',desc:'Labs, lecture halls, Dept. of Physics', map:'North Campus'},
+        {name:'Library',desc:'Open 8am - 10pm',map:'Central Quad'}
+      ],
+      dining: {cafeteria:'North Lawn Cafeteria',menu:['Paneer Tikka','Grilled Chicken','Vegan Salad Bar']}
+    }
+
+    // ---------- helpers to render UI ----------
+    const chatArea = document.getElementById('chatArea');
+    const suggestions = document.getElementById('suggestions');
+    const userInput = document.getElementById('userInput');
+
+    function appendMessage(text, who='bot'){
+      const div = document.createElement('div');
+      div.className = 'msg '+(who==='bot'?'bot':'user')+' fade-in';
+      div.innerHTML = `<div>${escapeHtml(text)}</div><div class='timestamp'>${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
+      chatArea.appendChild(div);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+    // ---------- Simple local "AI": rule-based demo ----------
+    function localRespond(q){
+      q = q.toLowerCase();
+      if(q.includes('schedule') || q.includes('class')){
+        const items = DATA.schedule.map(s=>`${s.time} — ${s.title} (${s.loc})`).join('<br>');
+        return `Here are your classes for today:<br>${items}`;
+      }
+      if(q.includes('library')){
+        return `Library hours are 8:00 — 22:00. You can search the catalogue or renew loans from the panel on the right.`;
+      }
+      if(q.includes('dining')||q.includes('cafeteria')||q.includes('menu')){
+        return `Today's highlights at ${DATA.dining.cafeteria}:<br>${DATA.dining.menu.join(', ')}`;
+      }
+      if(q.includes('facility')||q.includes('science')||q.includes('building')){
+        const f = DATA.facilities[0];
+        return `${f.name} — ${f.desc}. Location: ${f.map}. Would you like directions?`;
+      }
+      if(q.includes('transcript')||q.includes('admin')){
+        return `To request a transcript: 1) Fill the online form 2) Pay the fee 3) Wait 3–5 business days. Want the form link?`;
+      }
+      // fallback
+      return `I didn't quite get that. I can help with schedules, facilities, dining, library services, and admin procedures. Try: "Library hours" or "How do I get a transcript?"`;
+    }
+
+    // ---------- send flow ----------
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    userInput.addEventListener('keydown', function(e){ if(e.key==='Enter') sendMessage(); });
+    suggestions.addEventListener('click', e=>{ if(e.target.classList.contains('sug')){ userInput.value = e.target.textContent; sendMessage(); } });
+
+    function sendMessage(){
+      const txt = userInput.value.trim(); if(!txt) return;
+      appendMessage(txt,'user');
+      userInput.value='';
+
+      // show thinking indicator
+      appendMessage('Thinking...','bot');
+      // simulate delay
+      setTimeout(()=>{
+        // remove the last 'Thinking...' message
+        const msgs = chatArea.querySelectorAll('.msg');
+        const last = msgs[msgs.length-1];
+        if(last && last.textContent.includes('Thinking...')) last.remove();
+
+        // local rule-based response
+        const resp = localRespond(txt);
+        appendMessage(resp,'bot');
+      },600);
+    }
+
+    // ---------- sidebar nav behavior ----------
+    document.querySelectorAll('.nav button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const sec = btn.dataset.section;
+        if(sec==='schedules') showSchedules();
+        if(sec==='facilities') showFacilities();
+        if(sec==='dining') openDining();
+        if(sec==='library') openLibrary();
+        if(sec==='admin') openAdmin();
+      });
+    });
+
+    // ---------- small UI screens ----------
+    function showSchedules(){
+      const html = `<h2>Today's Schedule</h2><ul>${DATA.schedule.map(s=>`<li style=\"margin:8px 0\"><strong>${s.time}</strong> — ${s.title} <div style=\"color:var(--muted);font-size:13px\">${s.loc}</div></li>`).join('')}</ul>`;
+      showModal(html);
+    }
+    function showFacilities(){
+      const html = `<h2>Facilities</h2>${DATA.facilities.map(f=>`<div style=\"margin-bottom:10px\"><strong>${f.name}</strong><div style=\"color:var(--muted)\">${f.desc} — ${f.map}</div></div>`).join('')}`;
+      showModal(html);
+    }
+    function openDining(){
+      const html = `<h2>Dining Menu • ${DATA.dining.cafeteria}</h2><ul>${DATA.dining.menu.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+      showModal(html);
+    }
+    function openLibrary(){
+      const html = `<h2>Library Catalogue</h2><p style=\"color:var(--muted)\">Search example: "Introduction to Algorithms"</p>
+        <div style=\"display:flex;gap:8px;margin-top:8px\"><input id=\"libQuery\" placeholder=\"Search books...\" style=\"flex:1;padding:10px;border-radius:8px;border:0;background:rgba(255,255,255,0.02)\"><button onclick=\"doLibSearch()\" style=\"padding:8px 12px;border-radius:8px\">Search</button></div>
+        <div id=\"libResults\" style=\"margin-top:12px;color:var(--muted)\"></div>`;
+      showModal(html);
+    }
+    function doLibSearch(){
+      const q = document.getElementById('libQuery').value || '';
+      const r = `<div><strong>Results for "${escapeHtml(q)}"</strong></div><div style=\"margin-top:8px\">No live catalogue in prototype — integrate your library API here.</div>`;
+      document.getElementById('libResults').innerHTML = r;
+    }
+    function openLibraryHelp(){
+      appendMessage('Connecting you to the librarian...','bot');
+    }
+
+    function renewBooks(){
+      appendMessage('All your eligible loans have been renewed for 14 days.','bot');
+    }
+
+    function openAdmin(topic){
+      const html = `<h2>Administrative Procedures</h2>
+        <h3>Transcript request</h3>
+        <p style=\"color:var(--muted)\">To request a transcript: complete the online form, pay the fee, and allow 3–5 business days. Attach ID and student number.</p>
+        <button onclick=\"appendMessage(\'I need the transcript form link\', \'user\')\">Send request</button>`;
+      showModal(html);
+    }
+
+    function showModal(html){
+      document.getElementById('modalContent').innerHTML = html;
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function closeModal(){ document.getElementById('modal').style.display = 'none'; }
+
+    // ---------- small utility: initial populate nextClass ----------
+    function initSnapshot(){
+      const next = DATA.schedule[1] || DATA.schedule[0];
+      document.getElementById('nextClass').textContent = `${next.title} • ${next.time}`;
+    }
+    initSnapshot();
+
+    // ---------- Integration hooks (IMPORTANT) ----------
+    /*
+      To connect to a real conversational AI (OpenAI, Anthropic, Llama, etc.):
+       1) Implement a backend endpoint that holds your API key (do NOT expose keys in client JS).
+       2) Replace localRespond/sendMessage's fetch with a call to your backend: POST { message, context }
+       3) Backend forwards to the model and returns the model text to the client.
+       4) Provide richer context: user id, schedule data, facility metadata to the model so it can answer precisely.
+
+      Example stub (client):
+        async function sendToAI(message){
+          const res = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message})});
+          const data = await res.json();
+          return data.reply;
+        }
+    */
+
+    // ---------- small improvements you might want next ----------
+    //  - persist conversation (localStorage)  - add authentication to show personal schedules
+    //  - integrate campus calendar (iCal/Google)  - add push notifications for class cancellations
+    //  - convert UI to React + Tailwind for easier maintenance
+
+  </script>
+</body>
+</html>
